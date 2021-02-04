@@ -1,0 +1,79 @@
+common:
+  Description: >
+    When a string contains line breaks, you can use the literal style, indicated by the pipe "|",
+    to indicate that the string will span several lines. In literals, newlines are preserved
+    Alternatively, strings can be written with the folded style, denoted by ">", where each line break is replaced by a space.
+
+  get_voysum_rec_count: |
+    SELECT count(*) AS reccount FROM voyage_summary WHERE voyageid = ? AND reporttype = ?
+
+  check_voysum_rec: |
+    SELECT count(*) AS reccount FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
+
+  get_voysum_array: |
+    SELECT legnum_byleg AS legnum,
+      disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,
+      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,
+      avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,
+      wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,
+      curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,
+      perfspeed_byleg AS spdperftotal, perfspeed_gwx_wxfac0_byleg AS spdperfgw,
+      cpcons_code_byleg AS cpconscode, cpcons_actval_byleg AS cpconsactval,
+      cpcons_abtflag_byleg AS cpconsabtflag, cpcons_abtamt_byleg AS cpconsabtamt,
+      ifo_cons_total_byleg AS ifoacttotal, hfo_cons_total_byleg AS hfoacttotal,
+      mdo_cons_total_byleg AS mdoacttotal, mgo_cons_total_byleg AS mgoacttotal,
+      ifo_cons_total_gwx_byleg AS ifoactgw, hfo_cons_total_gwx_byleg AS hfoactgw,
+      mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,
+      cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,
+      cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt,
+      usegood
+      FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
+
+  get_voysum_json: |
+    SELECT row_to_json(s) AS voysum_json FROM (
+      SELECT legnum_byleg AS legnum,
+      disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,
+      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,
+      avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,
+      wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,
+      curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,
+      perfspeed_byleg AS spdperftotal, perfspeed_gwx_wxfac0_byleg AS spdperfgw,
+      cpcons_code_byleg AS cpconscode, cpcons_actval_byleg AS cpconsactval,
+      cpcons_abtflag_byleg AS cpconsabtflag, cpcons_abtamt_byleg AS cpconsabtamt,
+      ifo_cons_total_byleg AS ifoacttotal, hfo_cons_total_byleg AS hfoacttotal,
+      mdo_cons_total_byleg AS mdoacttotal, mgo_cons_total_byleg AS mgoacttotal,
+      ifo_cons_total_gwx_byleg AS ifoactgw, hfo_cons_total_gwx_byleg AS hfoactgw,
+      mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,
+      cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,
+      cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt,
+      usegood
+      FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
+    ) AS s
+
+  get_cp_gwx: |
+    SELECT cpgwx.* FROM cp_good_wx AS cpgwx, cp_voyage AS cpv WHERE cpv.voyageid = ? AND cpv.idgoodwx0 = cpgwx.cpgoodwxid
+
+  get_rec_list: |
+    SELECT reporttype, reportid, midpoints, pointtopointvoyageid,
+      (SELECT SUM(s) FROM UNNEST(disttotal_byleg) AS s) AS disttotal, (SELECT SUM(s) FROM UNNEST(timetotal_byleg) AS s) AS timetotal,
+      (SELECT SUM(s) FROM UNNEST(timetotal_gwx_byleg) AS s) AS timegwxtotal
+    FROM voyage_summary WHERE voyageid = ? AND reporttype IN ('EOV', 'MID')
+
+  get_sub_reports: |
+    SELECT id, reportname, (selected_id IS NOT NULL) AS include FROM (
+      SELECT err.reportid AS id, err.reportname, selected_id, err.reportorder FROM
+        eov_report_ref AS err LEFT OUTER JOIN
+          (SELECT reportid AS selected_id FROM eov_voyage_report WHERE voyageid = ?) AS evr
+        ON err.reportid = selected_id WHERE reportorder >= 0 ORDER BY reportorder
+    ) AS subq
+
+  Comment: >
+    SELECT cpgwx.* FROM cp_good_wx AS cpgwx, cp_voyage AS cpv WHERE cpv.voyageid = ? AND cpv.idgoodwx0 = cpgwx.cpgoodwxid
+    UPDATE voyage_summary SET
+      disttotal = (SELECT SUM(s) FROM UNNEST(disttotal_byleg) AS s),
+      timetotal = (SELECT SUM(s) FROM UNNEST(timetotal_byleg) AS s),
+      timeallow = (SELECT SUM(s) FROM UNNEST(timetotalallow_eov_byleg) AS s),
+      timesaved = ((SELECT SUM(s) FROM UNNEST(timetotalallow_eov_byleg) AS s) - (SELECT SUM(s) FROM UNNEST(timetotal_byleg) AS s)),
+      distgw = (SELECT SUM(s) FROM UNNEST(disttotal_gwx_byleg) AS s),
+      timegw = (SELECT SUM(s) FROM UNNEST(timetotal_gwx_byleg) AS s)
+    WHERE voyageid = 2020020223 AND reporttype = 'EOV' AND reportid = 2;
