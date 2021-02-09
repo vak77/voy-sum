@@ -35,41 +35,30 @@ class VoySumController extends AbstractController
 
   public function StatusCodeHandling(RequestException $e)
   {
-    if ($e->getResponse()->getStatusCode() == '400')
-    {
+    if ($e->getResponse()->getStatusCode() == '400') {
       //$this->prepare_access_token();
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
-    }
-    elseif ($e->getResponse()->getStatusCode() == '422')
-    {
+    } elseif ($e->getResponse()->getStatusCode() == '422') {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
-    }
-    elseif ($e->getResponse()->getStatusCode() == '500')
-    {
+    } elseif ($e->getResponse()->getStatusCode() == '500') {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
-    }
-    elseif ($e->getResponse()->getStatusCode() == '401')
-    {
+    } elseif ($e->getResponse()->getStatusCode() == '401') {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
-    }
-    elseif ($e->getResponse()->getStatusCode() == '403')
-    {
+    } elseif ($e->getResponse()->getStatusCode() == '403') {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
-    }
-    else
-    {
+    } else {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response;
     }
   }
 
   //public function __construct( RequestStack $requestStack, KernelInterface $kernel, LibGetClass $libGetClass, DataBaseAdapterClass $dataBaseAdapterClass)
-  public function __construct( RequestStack $requestStack, KernelInterface $kernel, DataBaseAdapterClass $dataBaseAdapterClass)
+  public function __construct(RequestStack $requestStack, KernelInterface $kernel, DataBaseAdapterClass $dataBaseAdapterClass)
   {
     $this->dbConnection = $this->dbName = $this->dbHost = $this->dbPort = $this->sqlYaml = null;
     $this->guzzleClient = $this->sumrecEndPoint = $this->endPointDbHost = null;
@@ -81,10 +70,9 @@ class VoySumController extends AbstractController
     $dotenv->loadEnv($kernel->getProjectDir() . "/.env");
 
     $this->dbName = $requestStack->getCurrentRequest()->get('dbname') ?: null;
-      $dbHostArray = explode(":", $requestStack->getCurrentRequest()->get('dbhost') ?: null);  //    >attributes->get('dbhost') ?: null;
+    $dbHostArray = explode(":", $requestStack->getCurrentRequest()->get('dbhost') ?: null);  //    >attributes->get('dbhost') ?: null;
 
-    if($dbHostArray)
-    {
+    if ($dbHostArray) {
       $this->dbHost = $dbHostArray[0];
       $this->dbPort = ((count($dbHostArray) > 1) ? $dbHostArray[1] : "5432");
     }
@@ -98,19 +86,15 @@ class VoySumController extends AbstractController
 
     $dataBaseAdapterClass->setConnection($this->dbName, $this->dbHost, $this->dbPort);
     $this->dbConnection = $dataBaseAdapterClass->getDbConnection();
-    try
-    {
+    try {
       $this->dbConnection->ping();
-    }
-    catch(Exception $e)
-    {
+    } catch (Exception $e) {
       $errMessage = str_replace('"', '\'', $e->getMessage()) . " **** " .
-        "DB = ".$this->dbConnection->getParams()['dbname'] .
+        "DB = " . $this->dbConnection->getParams()['dbname'] .
         ", HOST = " . $this->dbConnection->getParams()['host'] . ":" . $this->dbConnection->getParams()['port'] . "";
-        $errArray = ['Error' => ["No Connection to the database" => $errMessage]];
-        die(json_encode($errArray, JSON_PRETTY_PRINT));
+      $errArray = ['Error' => ["No Connection to the database" => $errMessage]];
+      die(json_encode($errArray, JSON_PRETTY_PRINT));
     }
-
   }
 
   /**
@@ -120,14 +104,14 @@ class VoySumController extends AbstractController
    * @param $voyId
    * @return Response
    */
-  public function getSumRecList( ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId)
+  public function getSumRecList(ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId)
   {
-    if(!$this->dbConnection)
+    if (!$this->dbConnection)
       //return new Response("No Connection to the database [". $this->dbname . "] on host [" . $this->dbhost . "]");
       return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");
 
     $retArray = $modelClass->getRecList($this->sqlYaml['common']['get_rec_list'], $voyId);
-/*
+    /*
     $response = new Response();
     $response->setContent(json_encode( $retArray, JSON_UNESCAPED_SLASHES));
     $response->headers->set('Content-Type', 'application/json');
@@ -144,15 +128,15 @@ class VoySumController extends AbstractController
    * @param $voyId
    * @return JsonResponse|Response
    */
-  public function getSubRepList( ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId)
+  public function getSubRepList(ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId)
   {
-    if(!$this->dbConnection)
+    if (!$this->dbConnection)
       //return new Response("No Connection to the database [". $this->dbname . "] on host [" . $this->dbhost . "]");
       return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");
 
     $retArray = null;
     $retSubReportsArray = $modelClass->getSubReports($this->sqlYaml['common'], $voyId);
-    if($retSubReportsArray['retCode'])
+    if ($retSubReportsArray['retCode'])
       $retArray = $retSubReportsArray['subRepArray'];
     else
       $retArray = ['Error' => 'No Sub-Reports'];
@@ -160,6 +144,28 @@ class VoySumController extends AbstractController
     return $libCommonClass->response($retArray);
   }
 
+  /**
+   * @Route("/cptext/{voyId}", name="cptext", requirements={"voyId"="\d+"})
+   * @param ModelClass $modelClass
+   * @param LibCommonClass $libCommonClass
+   * @param $voyId
+   * @return JsonResponse|Response
+   */
+  public function cptext(ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId)
+  {
+    if (!$this->dbConnection)
+      //return new Response("No Connection to the database [". $this->dbname . "] on host [" . $this->dbhost . "]");
+      return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");
+
+    $retArray = null;
+    $retSubReportsArray = $modelClass->getCpText($this->sqlYaml['common'], $voyId);
+    if ($retSubReportsArray['retCode'])
+      $retArray = $retSubReportsArray['subRepArray'];
+    else
+      $retArray = ['Error' => 'No CP Text'];
+
+    return $libCommonClass->response($retArray);
+  }
   /**
    * @Route("/getsumrecendpoint", name="getsumrecendpoint")
    * @param LibGetClass $libGetClass
@@ -183,45 +189,41 @@ class VoySumController extends AbstractController
     $postDataJson = $request->getContent(); //"timetotal":[348.7,471.9,16,0,327.1],"timegw":[0,328.6,0,0,39.1];
 
     $postDataArray = json_decode($postDataJson, true);
-    if(!$postDataArray)
-    {
+    if (!$postDataArray) {
       $postDataJson = preg_replace('/(?<=:)(?=,)/', '"EMPTY"', $postDataJson);
       $postDataArray = json_decode($postDataJson, true);
       $errorArray = ['description' => 'Some element of provided data is NULL. Look for \'EMPTY\''];
-      return $libCommonClass->response([ 'error' => $errorArray, 'data' => $postDataArray ]);
+      return $libCommonClass->response(['error' => $errorArray, 'data' => $postDataArray]);
     }
 
-    try
-    {
+    try {
 
-    $voyageId = $postDataArray['voyageid'];
-    $reportType = $postDataArray['reporttype'];
-    $reportId = $postDataArray['reportid'];
+      $voyageId = $postDataArray['voyageid'];
+      $reportType = $postDataArray['reporttype'];
+      $reportId = $postDataArray['reportid'];
 
-      if( !$voyageId || !$reportType || !$reportId )
-      {
+      if (!$voyageId || !$reportType || !$reportId) {
         //$postDataJson = preg_replace('/(?<=:)null(?=,)/', 'NULL', $postDataJson);
         //$postDataArray = json_decode($postDataJson, true);
         $errorArray = ['description' => 'Some element of provided data is NULL. Look for \'null\''];
         //return $libCommonClass->response(['data' => $postDataArray, 'error' => $errorArray]);
-        return $libCommonClass->response([ 'error' => $errorArray, 'data' => $postDataArray ]);
+        return $libCommonClass->response(['error' => $errorArray, 'data' => $postDataArray]);
       }
-    }
-    catch (Exception $e)
-    {
-      $errorArray = ['description' => 'POSTED data misconfigured. JSON is not legit.',
+    } catch (Exception $e) {
+      $errorArray = [
+        'description' => 'POSTED data misconfigured. JSON is not legit.',
         'code' => $e->getCode(),
-        'msg' => $e->getMessage()];
+        'msg' => $e->getMessage()
+      ];
       $retVar = $libCommonClass->response(['data' => $postDataJson, 'error' => $errorArray]);
-        $retContent = $retVar->getContent();
-        $retContent = preg_replace('/\\\"/', '"', $retContent);
+      $retContent = $retVar->getContent();
+      $retContent = preg_replace('/\\\"/', '"', $retContent);
       $retContent = preg_replace('/\\\n/', '', $retContent);
       $retVar->setContent($retContent);
       return $retVar;
     }
 
     return $libCommonClass->response($postDataArray);
-
   }
 
   /**
@@ -239,38 +241,35 @@ class VoySumController extends AbstractController
   {
     $argsArray = ['voyageid' => $voyId, 'reporttype' => $reportType, 'reportid' => $reportId];
 
-    if(!$this->dbConnection)
-      return $this->json("No Connection to the database [". $this->dbName . "] on host [" . $this->dbHost . "]");
+    if (!$this->dbConnection)
+      return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");
 
     $voyId = intval($voyId);
     $pointToPointArray = ($pointToPoint ? explode(",", $pointToPoint) : null);
-    if($reportType === 'MID')
-    {
+    if ($reportType === 'MID') {
       //if ((!$pointToPointArray || (count($pointToPointArray) != 2)) && (!$reportId))
       if (!$pointToPointArray || (count($pointToPointArray) != 2))
         return $libCommonClass->response(['Error' => "Report Type is 'MID' but neither 'point-to-point' nor 'report ID' provided"]);
     }
 
     $retArray = $modelClass->eovReportId($this->sqlYaml['common'], $voyId, $reportType, $reportId);
-    if($retArray['reportId'] == 0)
+    if ($retArray['reportId'] == 0)
       return $this->json($retArray["errStr"]);
-      //return new Response($retArray["errStr"]);
+    //return new Response($retArray["errStr"]);
     else
       $reportId = $retArray['reportId'];
 
     //Create new or update existing summary record
     $gwxResponse = null;
     $result = null;
-    try
-    {
+    try {
       // ======> can not create new MID report yet because can not extract piece of voyage yet <==============================
       $gwxResponse =
         $this->guzzleClient->get(
           $this->sumrecEndPoint . "?voyageid=" . $voyId . "&reporttype=" . $reportType . "&reportid=" . $reportId . "&dbname=" . $this->dbName . "&dbhost=" . $this->endPointDbHost
         );
       $result = $gwxResponse->getBody()->getContents();
-    }
-    catch (GuzzleException $e) {
+    } catch (GuzzleException $e) {
       $result = $this->StatusCodeHandling($e);
     }
 
@@ -279,12 +278,11 @@ class VoySumController extends AbstractController
     $retArray = $modelClass->getVoysumJson($this->sqlYaml['common'], $voyId, $reportType, $reportId);
 
     //$retCode = $retArray['retCode'];
-    if($retArray['retCode'])
-    {
+    if ($retArray['retCode']) {
       $voySumArray = json_decode($retArray['voySumJson'], true);
 
       $retArray = $modelClass->getCpgwxArray($this->sqlYaml['common'], $voyId);
-      if($retArray['retCode'])
+      if ($retArray['retCode'])
         $voySumArray['cpgwx'] = $retArray['cpGwxArray'];
       else
         $voySumArray['cpgwx'] = null;
@@ -305,7 +303,6 @@ class VoySumController extends AbstractController
       if($retArray['retCode'])
         $voySumArray['cpgwx'] = $retArray['cpGwxArray'];
       */
-
     }
 
     //return $libGetClass->response(['Error' => $retArray['errStr']]);

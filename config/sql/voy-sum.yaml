@@ -67,6 +67,10 @@ common:
         ON err.reportid = selected_id WHERE reportorder >= 0 ORDER BY reportorder
     ) AS subq
 
+  get_cp_text: |
+    SELECT cpc.clientcode, cpc.sectioncode, cpterms AS cptext FROM cp_client_section_ship AS cpc, voyage AS v 
+      WHERE cpc.amishipid = v.amishipid AND cpc.clientcode = ANY(v.clientcode) AND v.voyageid = ?
+
   Comment: >
     SELECT cpgwx.* FROM cp_good_wx AS cpgwx, cp_voyage AS cpv WHERE cpv.voyageid = ? AND cpv.idgoodwx0 = cpgwx.cpgoodwxid
     UPDATE voyage_summary SET
