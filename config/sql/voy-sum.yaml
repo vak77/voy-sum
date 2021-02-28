@@ -33,7 +33,7 @@ common:
     SELECT row_to_json(s) AS voysum_json FROM (
       SELECT legnum_byleg AS legnum,
       disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,
-      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,
+      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallowtotal,
       avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,
       wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,
       curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,
@@ -46,9 +46,13 @@ common:
       mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,
       cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,
       cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt,
+      extremarks, intremarks, mcrremarks,
       usegood
       FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
     ) AS s
+
+  delete_voy_sum: |
+    DELETE FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
 
   get_cp_gwx: |
     SELECT cpgwx.* FROM cp_good_wx AS cpgwx, cp_voyage AS cpv WHERE cpv.voyageid = ? AND cpv.idgoodwx0 = cpgwx.cpgoodwxid

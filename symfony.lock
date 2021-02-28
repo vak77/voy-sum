@@ -207,6 +207,9 @@
     "symfony/dependency-injection": {
         "version": "v5.0.10"
     },
+    "symfony/deprecation-contracts": {
+        "version": "v2.2.0"
+    },
     "symfony/doctrine-bridge": {
         "version": "v5.0.10"
     },
@@ -263,6 +266,9 @@
             "src/Kernel.php"
         ]
     },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
+    },
     "symfony/http-foundation": {
         "version": "v5.0.10"
     },
@@ -277,6 +283,9 @@
     },
     "symfony/orm-pack": {
         "version": "v2.1.0"
+    },
+    "symfony/polyfill-intl-grapheme": {
+        "version": "v1.22.0"
     },
     "symfony/polyfill-intl-idn": {
         "version": "v1.17.1"
@@ -354,6 +363,9 @@
     },
     "symfony/stopwatch": {
         "version": "v5.0.11"
+    },
+    "symfony/string": {
+        "version": "v5.2.3"
     },
     "symfony/translation-contracts": {
         "version": "v2.1.2"

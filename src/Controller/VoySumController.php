@@ -30,7 +30,7 @@ use function getenv;
  */
 class VoySumController extends AbstractController
 {
-  private $dbConnection, $dbName, $dbHost, $dbPort, $sqlYaml;
+  private $dbConnParamArray, $dbConnection, $dbName, $dbHost, $dbPort, $sqlYaml;
   private $guzzleClient, $sumrecEndPoint, $endPointDbHost;
 
   public function StatusCodeHandling(RequestException $e)
@@ -60,7 +60,7 @@ class VoySumController extends AbstractController
   //public function __construct( RequestStack $requestStack, KernelInterface $kernel, LibGetClass $libGetClass, DataBaseAdapterClass $dataBaseAdapterClass)
   public function __construct(RequestStack $requestStack, KernelInterface $kernel, DataBaseAdapterClass $dataBaseAdapterClass)
   {
-    $this->dbConnection = $this->dbName = $this->dbHost = $this->dbPort = $this->sqlYaml = null;
+    $this->dbConnection = $this->dbConnParamArray = $this->dbName = $this->dbHost = $this->dbPort = $this->sqlYaml = null;
     $this->guzzleClient = $this->sumrecEndPoint = $this->endPointDbHost = null;
 
     $sqlDir = $kernel->getProjectDir() . "/config/sql/";
@@ -86,12 +86,22 @@ class VoySumController extends AbstractController
 
     $dataBaseAdapterClass->setConnection($this->dbName, $this->dbHost, $this->dbPort);
     $this->dbConnection = $dataBaseAdapterClass->getDbConnection();
+    $dbConnArray =  (array)$this->dbConnection;
+    $dbConnJson = json_encode($dbConnArray);
+      $dbConnJson = preg_replace("/\\u0000/", '', $dbConnJson);
+      $dbConnJson = preg_replace("/\\\\/", '', $dbConnJson);
+      $dbConnJson = preg_replace("/DoctrineDBAL/", '', $dbConnJson);
+    $dbConnArray = json_decode($dbConnJson,true);
+
+    $this->dbConnParamArray =  $dbConnArray["Connectionparams"];
+
     try {
-      $this->dbConnection->ping();
-    } catch (Exception $e) {
+      $this->dbConnection->connect();
+    }
+    catch (Exception $e) {
       $errMessage = str_replace('"', '\'', $e->getMessage()) . " **** " .
-        "DB = " . $this->dbConnection->getParams()['dbname'] .
-        ", HOST = " . $this->dbConnection->getParams()['host'] . ":" . $this->dbConnection->getParams()['port'] . "";
+        "DB = " . $this->dbConnParamArray['dbname'] .
+        ", HOST = " . $this->dbConnParamArray['host'] . ":" . $this->dbConnParamArray['port'];
       $errArray = ['Error' => ["No Connection to the database" => $errMessage]];
       die(json_encode($errArray, JSON_PRETTY_PRINT));
     }
@@ -176,15 +186,43 @@ class VoySumController extends AbstractController
     return $libCommonClass->response(['sumrecEndPoint' => $this->sumrecEndPoint]);
   }
 
+  /**
+   * @Route("/delsumrec/{voyId}/{reportType}/{reportId}", name="delsumrec", requirements={"voyId"="\d+"})
+   * @param ModelClass $modelClass
+   * @param LibCommonClass $libCommonClass
+   * @param $voyId
+   * @param $reportType
+   * @param $reportId
+   * @return JsonResponse|Response
+   */
+  public function delSumRec(ModelClass $modelClass, LibCommonClass $libCommonClass, $voyId, $reportType, $reportId)
+  {
+    if (!$this->dbConnection)
+      return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");
+
+    $voyId = intval($voyId);
+    if ($reportType === 'MID') { ; }
+
+    $retArray = $modelClass->delSumRecord($this->sqlYaml['common'], $voyId, $reportType, $reportId);
+
+    if ($retArray['retCode'] == 0)
+      return $this->json($retArray["errStr"]);
+    else
+      $delRecordCount = $retArray['delRecordCount'];
+
+    return $libCommonClass->response(['delRecordCount' => $delRecordCount]);
+  }
+
+
   // /* @Route("/postsumrec/{voyId}/{reportType?'EOV'}/{reportId}", name="postsumrec", methods={"POST", "PUT"}, requirements={"voyId"="\d+"})
   /**
-   * @Route("/postsumrec", name="postsumrec", methods={"POST", "POSt"}, requirements={"voyId"="\d+"})
+   * @Route("/postsumrec/{voyId}/{reportType?'EOV'}/{reportId?0}/{pointToPoint?}", name="postsumrec", methods={"POST", "POSt"}, requirements={"voyId"="\d+"})
    * @param Request $request
    * @param LibPostClass $libPostClass
    * @param LibCommonClass $libCommonClass
    * @return Response
    */
-  public function postSumRec(Request $request, LibPostClass $libPostClass, LibCommonClass $libCommonClass)
+  public function postSumRec(Request $request, LibPostClass $libPostClass, LibCommonClass $libCommonClass, $voyId, $reportType, $reportId)
   {
     $postDataJson = $request->getContent(); //"timetotal":[348.7,471.9,16,0,327.1],"timegw":[0,328.6,0,0,39.1];
 
@@ -196,32 +234,7 @@ class VoySumController extends AbstractController
       return $libCommonClass->response(['error' => $errorArray, 'data' => $postDataArray]);
     }
 
-    try {
-
-      $voyageId = $postDataArray['voyageid'];
-      $reportType = $postDataArray['reporttype'];
-      $reportId = $postDataArray['reportid'];
-
-      if (!$voyageId || !$reportType || !$reportId) {
-        //$postDataJson = preg_replace('/(?<=:)null(?=,)/', 'NULL', $postDataJson);
-        //$postDataArray = json_decode($postDataJson, true);
-        $errorArray = ['description' => 'Some element of provided data is NULL. Look for \'null\''];
-        //return $libCommonClass->response(['data' => $postDataArray, 'error' => $errorArray]);
-        return $libCommonClass->response(['error' => $errorArray, 'data' => $postDataArray]);
-      }
-    } catch (Exception $e) {
-      $errorArray = [
-        'description' => 'POSTED data misconfigured. JSON is not legit.',
-        'code' => $e->getCode(),
-        'msg' => $e->getMessage()
-      ];
-      $retVar = $libCommonClass->response(['data' => $postDataJson, 'error' => $errorArray]);
-      $retContent = $retVar->getContent();
-      $retContent = preg_replace('/\\\"/', '"', $retContent);
-      $retContent = preg_replace('/\\\n/', '', $retContent);
-      $retVar->setContent($retContent);
-      return $retVar;
-    }
+    $cpTermsArray = $libPostClass->spreadDataAmongLegs($postDataArray);
 
     return $libCommonClass->response($postDataArray);
   }
@@ -239,7 +252,7 @@ class VoySumController extends AbstractController
    */
   public function getSumRec(ModelClass $modelClass, LibGetClass $libGetClass, LibCommonClass $libCommonClass, $voyId, $reportType, $reportId, $pointToPoint)
   {
-    $argsArray = ['voyageid' => $voyId, 'reporttype' => $reportType, 'reportid' => $reportId];
+    //$argsArray = ['voyageid' => $voyId, 'reporttype' => $reportType, 'reportid' => $reportId];
 
     if (!$this->dbConnection)
       return $this->json("No Connection to the database [" . $this->dbName . "] on host [" . $this->dbHost . "]");

@@ -110,18 +110,18 @@ class LibGetClass
         $hfoTotal = $voySumArray['hfoacttotal'][$legIndex]; $hfoTotal = (($hfoTotal > 0.0) ? $hfoTotal : 0.0);
         $mdoTotal = $voySumArray['mdoacttotal'][$legIndex]; $mdoTotal = (($mdoTotal > 0.0) ? $mdoTotal : 0.0);
         $mgoTotal = $voySumArray['mgoacttotal'][$legIndex]; $mgoTotal = (($mgoTotal > 0.0) ? $mgoTotal : 0.0);
-        $foTotal += round($ifoTotal + $hfoTotal, 2);
-        $doTotal += round($mdoTotal + $mgoTotal, 2);
+          $foTotal += round($ifoTotal + $hfoTotal, 2);
+          $doTotal += round($mdoTotal + $mgoTotal, 2);
         $ifoGw = $voySumArray['ifoactgw'][$legIndex]; $ifoGw = (($ifoGw > 0.0) ? $ifoGw : 0.0);
         $hfoGw = $voySumArray['hfoactgw'][$legIndex]; $hfoGw = (($hfoGw > 0.0) ? $hfoGw : 0.0);
         $mdoGw = $voySumArray['mdoactgw'][$legIndex]; $mdoGw = (($mdoGw > 0.0) ? $mdoGw : 0.0);
         $mgoGw = $voySumArray['mgoactgw'][$legIndex]; $mgoGw = (($mgoGw > 0.0) ? $mgoGw : 0.0);
-        $foGw += round($ifoGw + $hfoGw, 2);
-        $doGw += round($mdoGw + $mgoGw, 2);
+          $foGw += round($ifoGw + $hfoGw, 2);
+          $doGw += round($mdoGw + $mgoGw, 2);
 
-        $wxFacTotal += round($voySumArray['wxfactotal'][$legIndex] * $voySumArray['timetotal'][$legIndex], 2);
+        $wxFacTotal += round($voySumArray['wxfactotal'][$legIndex] * $voySumArray['timetotal'][$legIndex], 4);
         $wxFacGw += round($voySumArray['wxfacgw'][$legIndex] * $voySumArray['timegw'][$legIndex], 2);
-        $curFacTotal += round($voySumArray['curfactotal'][$legIndex] * $voySumArray['timetotal'][$legIndex], 2);
+        $curFacTotal += round($voySumArray['curfactotal'][$legIndex] * $voySumArray['timetotal'][$legIndex], 4);
         $curFacGw += round($voySumArray['curfacgw'][$legIndex] * $voySumArray['timegw'][$legIndex], 2);
       }
 
@@ -130,14 +130,18 @@ class LibGetClass
       $row['timetotal'] = round($timeTotal, 2);
       $row['timegw'] = round($timeGw, 2);
 
-      $row['spdavgtotal'] = (($timeTotal) ? (round($distTotal / $timeTotal, 2)) : -99.0);
+      //$row['spdavgtotal'] = (($timeTotal) ? (round($distTotal / $timeTotal, 2)) : -99.0);
+      $row['spdavgtotal'] = (($timeTotal) ? (round($distTotal / $timeTotal, 4)) : -99.0);
       $row['spdavggw'] = (($timeGw) ? (round($distGw / $timeGw, 2)) : -99.0);
-      $row['wxfactotal'] = (($timeTotal) ? round(round($wxFacTotal, 2) / $timeTotal, 2) : -99.0);
+      //$row['wxfactotal'] = (($timeTotal) ? round(round($wxFacTotal, 2) / $timeTotal, 2) : -99.0);
+      $row['wxfactotal'] = (($timeTotal) ? round($wxFacTotal / $timeTotal, 4) : -99.0);
       $row['wxfacgw'] = (($timeGw) ? round(round($wxFacGw, 2) / $timeGw, 2) : -99.0);
-      $row['curfactotal'] = (($timeTotal) ? round(round($curFacTotal, 2) / $timeTotal, 2) : -99.0);
+      //$row['curfactotal'] = (($timeTotal) ? round(round($curFacTotal, 2) / $timeTotal, 2) : -99.0);
+      $row['curfactotal'] = (($timeTotal) ? round($curFacTotal / $timeTotal, 4) : -99.0);
       $row['curfacgw'] = (($timeGw) ? round(round($curFacGw, 2) / $timeGw, 2) : -99.0);
 
-      $spdPerfTotal = (($timeTotal) ? round($row['spdavgtotal'] - $row['wxfactotal'] - $row['curfactotal'], 2) : -99.0);
+      $spdPerfTotal = (($timeTotal) ? round($row['spdavgtotal'] - $row['wxfactotal'] - $row['curfactotal'], 4) : -99.0);
+      //$spdPerfTotal = (($timeTotal) ? round($row['spdavgtotal'] - $row['curfactotal'], 2) : -99.0);
       $row['spdperftotal'] = $spdPerfTotal;
       //$spdPerfGw = (($timeGw) ? round($row['spdavggw'] - $row['curfacgw'], 2) : -99.0);
       $spdPerfGw = (($timeGw) ? round($row['spdavggw'] - $row['wxfacgw'] - $row['curfacgw'], 2) : -99.0);
@@ -161,10 +165,10 @@ class LibGetClass
       // Consumption Allowance Computation: For London CP "Allowable Time" is used; for New York CP the smallest "Allowable Time" or "Actual Sailing Time" is used.
       $foCpVal = floatval($row['focpval']);  $foCpAbtFlag = floatval($row['focpabtflag']);  $foCpAbtAmt = floatval($row['focpabtamt']);
       $foCpVal = (($foCpVal > 0.0) ? $foCpVal : 0.0);
-        $foCpVal = round($foCpVal * (1.0 + round($foCpAbtAmt * $foCpAbtFlag / 100.0, 2)), 3);
+        //$foCpVal = round($foCpVal * (1.0 + round($foCpAbtAmt * $foCpAbtFlag / 100.0, 2)), 3);
       $doCpVal = floatval($row['docpval']);  $doCpAbtFlag = floatval($row['docpabtflag']);  $doCpAbtAmt = floatval($row['docpabtamt']);
       $doCpVal = (($doCpVal > 0.0) ? $doCpVal : 0.0);
-        $doCpVal = round($doCpVal * (1.0 + round($doCpAbtAmt * $doCpAbtFlag / 100.0, 2)), 3);
+        //$doCpVal = round($doCpVal * (1.0 + round($doCpAbtAmt * $doCpAbtFlag / 100.0, 2)), 3);
 
       $timeConsAllowTotal = $timeAllowTotal;
       $timeConsAllowGw = $timeAllowGw;
