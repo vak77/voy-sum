@@ -273,25 +273,30 @@ class VoySumController extends AbstractController
         return $libCommonClass->response(['Error' => "Report Type is 'MID' but neither 'point-to-point' nor 'report ID' provided"]);
     }
 
-    $retArray = $modelClass->eovReportId($this->sqlYaml['common'], $voyId, $reportType, $reportId);
-    if ($retArray['reportId'] == 0)
-      return $this->json($retArray["errStr"]);
-    //return new Response($retArray["errStr"]);
-    else
-      $reportId = $retArray['reportId'];
+    if(!$reportId)  //  <================== "reportId" = 0 - this means  new record should be created
+    {
+      $retArray = $modelClass->eovReportId($this->sqlYaml['common'], $voyId, $reportType, $reportId);
+      if ($retArray['reportId'] == 0)
+        return $this->json($retArray["errStr"]);
+      //return new Response($retArray["errStr"]);
+      else
+        $reportId = $retArray['reportId'];
 
-    //Create new or update existing summary record
-    $gwxResponse = null;
-    $result = null;
-    try {
-      // ======> can not create new MID report yet because can not extract piece of voyage yet <==============================
-      $gwxResponse =
-        $this->guzzleClient->get(
-          $this->sumrecEndPoint . "?voyageid=" . $voyId . "&reporttype=" . $reportType . "&reportid=" . $reportId . "&dbname=" . $this->dbName . "&dbhost=" . $this->endPointDbHost
-        );
-      $result = $gwxResponse->getBody()->getContents();
-    } catch (GuzzleException $e) {
-      $result = $this->StatusCodeHandling($e);
+      //Create new or update existing summary record
+      $gwxResponse = null;
+      $result = null;
+      try
+      {
+        // ======> can not create new MID report yet because can not extract piece of voyage yet <==============================
+        $gwxResponse =
+          $this->guzzleClient->get(
+            $this->sumrecEndPoint."?voyageid=".$voyId."&reporttype=".$reportType."&reportid=".$reportId."&dbname=".$this->dbName."&dbhost=".$this->endPointDbHost
+          );
+        $result = $gwxResponse->getBody()->getContents();
+      } catch (GuzzleException $e)
+      {
+        $result = $this->StatusCodeHandling($e);
+      }
     }
 
     $retValsArray = null;
