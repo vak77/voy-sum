@@ -1,0 +1,43 @@
+\x 
+
+SELECT legnum_byleg AS legnum,
+      disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,
+      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,
+      avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,
+      wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,
+      curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,
+      perfspeed_byleg AS spdperftotal, perfspeed_gwx_wxfac0_byleg AS spdperfgw,
+      cpcons_code_byleg AS cpconscode, cpcons_actval_byleg AS cpconsactval,
+      cpcons_abtflag_byleg AS cpconsabtflag, cpcons_abtamt_byleg AS cpconsabtamt,
+      ifo_cons_total_byleg AS ifoacttotal, hfo_cons_total_byleg AS hfoacttotal,
+      mdo_cons_total_byleg AS mdoacttotal, mgo_cons_total_byleg AS mgoacttotal,
+      ifo_cons_total_gwx_byleg AS ifoactgw, hfo_cons_total_gwx_byleg AS hfoactgw,
+      mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,
+      cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,
+      cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt
+      FROM voyage_summary WHERE voyageid = 2020020228 AND reporttype = 'EOV' AND reportid = 1;
+
+
+			SELECT row_to_json(s) AS voysum_json FROM (
+      SELECT legnum_byleg AS legnum,
+      disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,
+      timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,
+      avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,
+      wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,
+      curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,
+      perfspeed_byleg AS spdperftotal, perfspeed_gwx_wxfac0_byleg AS spdperfgw,
+      cpcons_code_byleg AS cpconscode, cpcons_actval_byleg AS cpconsactval,
+      cpcons_abtflag_byleg AS cpconsabtflag, cpcons_abtamt_byleg AS cpconsabtamt,
+      ifo_cons_total_byleg AS ifoacttotal, hfo_cons_total_byleg AS hfoacttotal,
+      mdo_cons_total_byleg AS mdoacttotal, mgo_cons_total_byleg AS mgoacttotal,
+      ifo_cons_total_gwx_byleg AS ifoactgw, hfo_cons_total_gwx_byleg AS hfoactgw,
+      mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,
+      cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,
+      cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt
+      FROM voyage_summary WHERE voyageid = 2020020228 AND reporttype = 'EOV' AND reportid = 1
+    ) AS s;
+
+
+
+
+			SELECT row_to_json(s) AS voysum_json FROM (  SELECT legnum_byleg AS legnum,  disttotal_byleg AS disttotal, disttotal_gwx_byleg AS distgw,  timetotal_byleg AS timetotal, timetotal_gwx_byleg AS timegw, timetotalallow_eov_byleg AS timeallow,  avgspeed_byleg AS spdavgtotal, avgspeed_gwx_byleg AS spdavggw,  wxfac_byleg AS wxfactotal, wxfac_gwx_byleg AS wxfacgw,  curfac_byleg AS curfactotal, curfac_gwx_byleg AS curfacgw,  perfspeed_byleg AS spdperftotal, perfspeed_gwx_wxfac0_byleg AS spdperfgw,  cpcons_code_byleg AS cpconscode, cpcons_actval_byleg AS cpconsactval,  cpcons_abtflag_byleg AS cpconsabtflag, cpcons_abtamt_byleg AS cpconsabtamt,  ifo_cons_total_byleg AS ifoacttotal, hfo_cons_total_byleg AS hfoacttotal,  mdo_cons_total_byleg AS mdoacttotal, mgo_cons_total_byleg AS mgoacttotal,  ifo_cons_total_gwx_byleg AS ifoactgw, hfo_cons_total_gwx_byleg AS hfoactgw,  mdo_cons_total_gwx_byleg AS mdoactgw, mgo_cons_total_gwx_byleg AS mgoactgw,  cpspeed_byleg AS cpspd, cpspeed_noabt_byleg AS cpspdnoabt,  cpspeed_byleg AS cpspdabtflag, cpspeed_noabt_byleg AS cpspdabtamt  FROM voyage_summary WHERE voyageid = 2020090076 AND reporttype = 'MID' AND reportid = 6) AS s;
