@@ -165,10 +165,8 @@ class LibGetClass
       // Consumption Allowance Computation: For London CP "Allowable Time" is used; for New York CP the smallest "Allowable Time" or "Actual Sailing Time" is used.
       $foCpVal = floatval($row['focpval']);  $foCpAbtFlag = floatval($row['focpabtflag']);  $foCpAbtAmt = floatval($row['focpabtamt']);
       $foCpVal = (($foCpVal > 0.0) ? $foCpVal : 0.0);
-        //$foCpVal = round($foCpVal * (1.0 + round($foCpAbtAmt * $foCpAbtFlag / 100.0, 2)), 3);
       $doCpVal = floatval($row['docpval']);  $doCpAbtFlag = floatval($row['docpabtflag']);  $doCpAbtAmt = floatval($row['docpabtamt']);
       $doCpVal = (($doCpVal > 0.0) ? $doCpVal : 0.0);
-        //$doCpVal = round($doCpVal * (1.0 + round($doCpAbtAmt * $doCpAbtFlag / 100.0, 2)), 3);
 
       $timeConsAllowTotal = $timeAllowTotal;
       $timeConsAllowGw = $timeAllowGw;
@@ -277,8 +275,6 @@ class LibGetClass
         $cpTermsRow['docpabtflag'] = max([$cpTermsRow['mdocpabtflag'], $cpTermsRow['mgocpabtflag']]);
         $cpTermsRow['docpabtamt'] = max([$cpTermsRow['mdocpabtamt'], $cpTermsRow['mgocpabtamt']]);
 
-        //$cpTermsArray[$cpTermsRow['cpspdnoabt']] = str_replace('"', '\'', json_encode($cpTermsRow, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-        //$cpTermsArray[$cpTermsRow['cpspdnoabt']] = json_encode($cpTermsRow, JSON_FORCE_OBJECT |  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $cpTermsArray[$cpTermsRow['cpspdnoabt']] = $cpTermsRow; //  <===== if element with the same 'cpspdnoabt' does already exist in "cpTermsArray" - it will be replaced
         //  so, "cpTermsArray" would include only unique elements
       }

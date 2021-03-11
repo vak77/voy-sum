@@ -51,7 +51,10 @@ common:
       FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
     ) AS s
 
-  delete_voy_sum: |
+  set_voysum: |
+    UPDATE voyage_summary SET ? WHERE voyageid = ? AND reporttype = ? AND reportid = ?
+
+  delete_voysum: |
     DELETE FROM voyage_summary WHERE voyageid = ? AND reporttype = ? AND reportid = ?
 
   get_cp_gwx: |

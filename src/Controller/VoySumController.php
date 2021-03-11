@@ -215,18 +215,24 @@ class VoySumController extends AbstractController
 
 
   // /* @Route("/postsumrec/{voyId}/{reportType?'EOV'}/{reportId}", name="postsumrec", methods={"POST", "PUT"}, requirements={"voyId"="\d+"})
+
   /**
    * @Route("/postsumrec/{voyId}/{reportType?'EOV'}/{reportId?0}/{pointToPoint?}", name="postsumrec", methods={"POST", "POSt"}, requirements={"voyId"="\d+"})
    * @param Request $request
+   * @param ModelClass $modelClass
    * @param LibPostClass $libPostClass
    * @param LibCommonClass $libCommonClass
+   * @param $voyId
+   * @param $reportType
+   * @param $reportId
    * @return Response
    */
-  public function postSumRec(Request $request, LibPostClass $libPostClass, LibCommonClass $libCommonClass, $voyId, $reportType, $reportId)
+  public function postSumRec(Request $request, ModelClass $modelClass, LibPostClass $libPostClass, LibCommonClass $libCommonClass, $voyId, $reportType, $reportId)
   {
     $postDataJson = $request->getContent(); //"timetotal":[348.7,471.9,16,0,327.1],"timegw":[0,328.6,0,0,39.1];
 
     $postDataArray = json_decode($postDataJson, true);
+    //$postDataJson = json_encode($postDataArray);
     if (!$postDataArray) {
       $postDataJson = preg_replace('/(?<=:)(?=,)/', '"EMPTY"', $postDataJson);
       $postDataArray = json_decode($postDataJson, true);
@@ -234,9 +240,11 @@ class VoySumController extends AbstractController
       return $libCommonClass->response(['error' => $errorArray, 'data' => $postDataArray]);
     }
 
-    $cpTermsArray = $libPostClass->spreadDataAmongLegs($postDataArray);
+    $setFieldsStr = $libPostClass->spreadDataAmongLegs($postDataArray);
 
-    return $libCommonClass->response($postDataArray);
+    $returnArray = $modelClass->setVoysumRecord($this->sqlYaml['common'], $setFieldsStr, $voyId, $reportType, $reportId);
+
+    return $libCommonClass->response($returnArray);
   }
 
   /**
